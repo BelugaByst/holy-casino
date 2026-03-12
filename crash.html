@@ -243,6 +243,10 @@
             min-width: 200px;
         }
         
+        .notification.error {
+            background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
+        }
+        
         .notification.show {
             transform: translateX(-50%) translateY(0);
         }
@@ -323,16 +327,17 @@
         let gameInterval;
         let crashPoint;
         let currentBet = 0;
-        let winChance = 1.0; // Начальный шанс выигрыша
+        let winChance = 1.0;
         
-        // Получаем данные от бота
-        tg.onEvent('mainButtonClicked', function() {
-            tg.sendData(JSON.stringify({action: 'close'}));
-        });
+        // Инициализация
+        tg.ready();
+        requestBalance();
         
-        // Запрашиваем баланс
+        // Функция запроса баланса
         function requestBalance() {
-            tg.sendData(JSON.stringify({action: 'get_balance'}));
+            tg.sendData(JSON.stringify({
+                action: 'get_balance'
+            }));
         }
         
         // Обновление баланса
@@ -356,20 +361,26 @@
         
         // Расчет шанса выигрыша на основе ставки
         function calculateWinChance(bet) {
-            // Базовая вероятность краша на 1.01x - 5.75%
             const baseCrashChance = 0.0575; // 5.75%
-            
-            // Чем больше ставка, тем выше шанс краша на 1.01x
-            // Максимум 30% при ставке 100кк
-            let betMultiplier = Math.min(bet / 10000000, 5); // 10кк = x0.5, 100кк = x5
+            let betMultiplier = Math.min(bet / 10000000, 5);
             let adjustedCrashChance = Math.min(baseCrashChance * (1 + betMultiplier * 0.5), 0.3);
-            
-            // Шанс на выигрыш (не краш на 1.01x) = 1 - adjustedCrashChance
             winChance = 1 - adjustedCrashChance;
-            
-            console.log(`Ставка: ${bet}, шанс краша на 1.01x: ${(adjustedCrashChance * 100).toFixed(2)}%, шанс на игру: ${(winChance * 100).toFixed(2)}%`);
-            
             return adjustedCrashChance;
+        }
+        
+        // Показать уведомление
+        function showNotification(message, duration, isError = false) {
+            let notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.classList.remove('error');
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, duration * 1000);
         }
         
         // Начать игру
@@ -377,17 +388,17 @@
             let bet = parseInt(document.getElementById('bet').value);
             
             if (bet < 1000000) {
-                showNotification('❌ Минимальная ставка 1,000,000₽', 2.5, '#ff4444');
+                showNotification('❌ Минимальная ставка 1,000,000₽', 2.5, true);
                 return;
             }
             
             if (bet > 100000000) {
-                showNotification('❌ Максимальная ставка 100,000,000₽', 2.5, '#ff4444');
+                showNotification('❌ Максимальная ставка 100,000,000₽', 2.5, true);
                 return;
             }
             
             if (bet > balance) {
-                showNotification('❌ Недостаточно средств!', 2.5, '#ff4444');
+                showNotification('❌ Недостаточно средств!', 2.5, true);
                 return;
             }
             
@@ -404,10 +415,8 @@
             
             // Генерируем точку краша
             if (Math.random() < crashChance) {
-                // Краш на 1.01x (5.75% + бонус от ставки)
                 crashPoint = 1.01;
             } else {
-                // Нормальная игра
                 crashPoint = generateCrashPoint();
             }
             
@@ -415,15 +424,12 @@
         }
         
         function generateCrashPoint() {
-            // Генерируем точку краша от 1.02 до 10.0
-            // Чем выше множитель, тем меньше шанс
             let r = Math.random();
-            // Распределение: чаще крашит на низких множителях
-            if (r < 0.3) return 1.02 + Math.random() * 0.5;  // 1.02-1.52
-            if (r < 0.6) return 1.52 + Math.random() * 1.0;  // 1.52-2.52
-            if (r < 0.8) return 2.52 + Math.random() * 2.0;  // 2.52-4.52
-            if (r < 0.95) return 4.52 + Math.random() * 3.0; // 4.52-7.52
-            return 7.52 + Math.random() * 2.48;              // 7.52-10.0
+            if (r < 0.3) return 1.02 + Math.random() * 0.5;
+            if (r < 0.6) return 1.52 + Math.random() * 1.0;
+            if (r < 0.8) return 2.52 + Math.random() * 2.0;
+            if (r < 0.95) return 4.52 + Math.random() * 3.0;
+            return 7.52 + Math.random() * 2.48;
         }
         
         function startGameAnimation() {
@@ -456,11 +462,10 @@
             document.getElementById('playBtn').style.display = 'block';
             document.getElementById('cashoutBtn').style.display = 'none';
             
-            showNotification(`💥 КРАШ на ${crashPoint.toFixed(2)}x! Проигрыш: ${currentBet.toLocaleString()}₽`, 2.5, '#ff4444');
+            showNotification(`💥 КРАШ на ${crashPoint.toFixed(2)}x! Проигрыш: ${currentBet.toLocaleString()}₽`, 2.5, true);
             
             addToHistory('lose', currentBet, 0);
             
-            // Обновляем баланс
             setTimeout(requestBalance, 500);
         }
         
@@ -472,7 +477,6 @@
             
             let win = Math.floor(currentBet * currentMultiplier);
             
-            // Отправляем выигрыш в бот
             tg.sendData(JSON.stringify({
                 action: 'cashout_crash',
                 win: win
@@ -482,23 +486,11 @@
             document.getElementById('cashoutBtn').style.display = 'none';
             document.getElementById('multiplier').style.display = 'block';
             
-            showNotification(`🎉 ВЫИГРЫШ! +${win.toLocaleString()}₽ (${currentMultiplier.toFixed(2)}x)`, 2.5, '#00ff87');
+            showNotification(`🎉 ВЫИГРЫШ! +${win.toLocaleString()}₽ (${currentMultiplier.toFixed(2)}x)`, 2.5);
             
             addToHistory('win', currentBet, win);
             
-            // Обновляем баланс
             setTimeout(requestBalance, 500);
-        }
-        
-        function showNotification(message, duration, color) {
-            let notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.background = `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`;
-            notification.classList.add('show');
-            
-            setTimeout(function() {
-                notification.classList.remove('show');
-            }, duration * 1000);
         }
         
         function addToHistory(result, bet, win) {
@@ -518,10 +510,6 @@
                 historyDiv.removeChild(historyDiv.lastChild);
             }
         }
-        
-        // Инициализация
-        tg.ready();
-        requestBalance();
     </script>
 </body>
 </html>
