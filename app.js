@@ -1,56 +1,123 @@
 const tg = window.Telegram.WebApp
-
 tg.expand()
 
 let balance = 0
+let multiplier = 1
+let playing = false
+let bet = 0
 
 function updateBalance(){
 
-let el = document.getElementById("balance")
-
-if(el) el.innerText = balance
+document.getElementById("balance").innerText = balance
 
 }
 
-function getBalance(){
+function play(){
 
-Telegram.WebApp.sendData(JSON.stringify({
+if(playing) return
 
-action:"get_balance"
+bet = parseInt(document.getElementById("bet").value)
+
+if(!bet){
+show("Введите ставку")
+return
+}
+
+if(bet < 1000000){
+show("Минимум 1кк")
+return
+}
+
+if(bet > 100000000){
+show("Максимум 100кк")
+return
+}
+
+if(bet > balance){
+show("Недостаточно средств")
+return
+}
+
+tg.sendData(JSON.stringify({
+action:"start_crash",
+bet:bet
+}))
+
+playing = true
+multiplier = 1
+
+animate()
+
+}
+
+function animate(){
+
+if(!playing) return
+
+multiplier += 0.02
+
+document.getElementById("multiplier").innerText = multiplier.toFixed(2)+"x"
+
+requestAnimationFrame(animate)
+
+}
+
+function cashout(){
+
+if(!playing) return
+
+playing = false
+
+let win = Math.floor(bet * multiplier)
+
+tg.sendData(JSON.stringify({
+
+action:"cashout_crash",
+win:win
 
 }))
 
 }
 
-Telegram.WebApp.onEvent("message", function(event){
+function show(text){
+
+document.getElementById("msg").innerText = text
+
+}
+
+Telegram.WebApp.onEvent("message",function(event){
 
 let data = JSON.parse(event.data)
 
-if(data.type === "balance"){
+if(data.type=="balance"){
 
-balance = data.balance
+balance=data.balance
 updateBalance()
 
 }
 
-if(data.type === "bet_accepted"){
+if(data.type=="lose"){
 
-balance = data.balance
-updateBalance()
+show("Вы проиграли")
 
 }
 
-if(data.type === "win"){
+if(data.type=="win"){
 
-balance = data.balance
+balance=data.balance
 updateBalance()
+show("Вы выиграли "+data.win)
 
 }
 
 })
 
-window.onload = function(){
+window.onload=function(){
 
-getBalance()
+tg.sendData(JSON.stringify({
+
+action:"get_balance"
+
+}))
 
 }
