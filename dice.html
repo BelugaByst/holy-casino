@@ -1,238 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dice Game</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            background: #1a1a2e;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        .balance {
-            font-size: 24px;
-            margin: 20px;
-            color: #00ff88;
-        }
-        .game-area {
-            background: #16213e;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .dice-area {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 30px;
-        }
-        .dice {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            font-weight: bold;
-            color: black;
-            transition: all 0.3s;
-        }
-        .rolling {
-            animation: roll 0.5s infinite;
-        }
-        @keyframes roll {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .bet-input {
-            width: 200px;
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: none;
-            margin: 10px;
-            text-align: center;
-        }
-        .button {
-            padding: 15px 40px;
-            font-size: 20px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin: 10px;
-            font-weight: bold;
-        }
-        .play {
-            background: #4CAF50;
-            color: white;
-        }
-        .choice-btn {
-            padding: 15px 30px;
-            font-size: 18px;
-            margin: 5px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .selected {
-            background: #4CAF50;
-            color: white;
-        }
-        .status {
-            font-size: 18px;
-            margin: 20px;
-        }
-        .history {
-            margin-top: 20px;
-            font-size: 14px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Dice Game</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body>
-    <div class="game-area">
-        <h1>🎲 DICE GAME</h1>
-        <div class="balance">Баланс: <span id="balance">0</span> монет</div>
-        
-        <div class="dice-area">
-            <div class="dice" id="playerDice">❓</div>
-            <div class="dice" id="botDice">❓</div>
-        </div>
-        
-        <div>
-            <input type="number" id="bet" class="bet-input" placeholder="Ставка" min="100" value="1000">
-        </div>
-        
-        <div style="margin: 20px;">
-            <button class="choice-btn" onclick="setChoice('high')" id="highBtn">📈 ВЫШЕ (6-8)</button>
-            <button class="choice-btn" onclick="setChoice('low')" id="lowBtn">📉 НИЖЕ (2-4)</button>
-            <button class="choice-btn" onclick="setChoice('seven')" id="sevenBtn">⚡ РОВНО 7</button>
-        </div>
-        
-        <button class="button play" id="playBtn" onclick="playGame()">🎲 БРОСИТЬ КОСТИ</button>
-        
-        <div class="status" id="status"></div>
-        <div class="history" id="history"></div>
-    </div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        let balance = 0;
-        let currentChoice = 'high';
-        let choiceMultipliers = {
-            'high': 2,
-            'low': 2,
-            'seven': 5
-        };
-        
-        function setChoice(choice) {
-            currentChoice = choice;
-            document.getElementById('highBtn').classList.remove('selected');
-            document.getElementById('lowBtn').classList.remove('selected');
-            document.getElementById('sevenBtn').classList.remove('selected');
-            document.getElementById(choice + 'Btn').classList.add('selected');
-        }
-        
-        function requestBalance() {
-            tg.sendData(JSON.stringify({action: 'get_balance'}));
-        }
-        
-        function updateBalance(newBalance) {
-            balance = newBalance;
-            document.getElementById('balance').innerText = balance.toLocaleString();
-        }
-        
-        function playGame() {
-            let bet = parseInt(document.getElementById('bet').value);
-            
-            if (bet < 100) {
-                alert('Минимальная ставка 100 монет!');
-                return;
-            }
-            
-            if (bet > balance) {
-                alert('Недостаточно средств!');
-                return;
-            }
-            
-            // Анимация броска
-            document.getElementById('playerDice').classList.add('rolling');
-            document.getElementById('botDice').classList.add('rolling');
-            document.getElementById('playBtn').disabled = true;
-            
-            // Отправляем запрос в бот
-            tg.sendData(JSON.stringify({
-                action: 'play_dice',
-                bet: bet,
-                choice: currentChoice
-            }));
-        }
-        
-        function showResult(player, bot, win, amount) {
-            document.getElementById('playerDice').classList.remove('rolling');
-            document.getElementById('botDice').classList.remove('rolling');
-            document.getElementById('playBtn').disabled = false;
-            
-            document.getElementById('playerDice').innerText = player;
-            document.getElementById('botDice').innerText = bot;
-            
-            let sum = player + bot;
-            document.getElementById('playerDice').innerText = player;
-            document.getElementById('botDice').innerText = bot;
-            
-            let status = document.getElementById('status');
-            if (win) {
-                status.innerHTML = `✅ ВЫИГРЫШ! Сумма: ${sum} | +${amount} монет!`;
-                status.style.color = '#00ff88';
-            } else {
-                status.innerHTML = `❌ ПРОИГРЫШ! Сумма: ${sum}`;
-                status.style.color = '#ff4444';
-            }
-            
-            // Добавляем в историю
-            addToHistory(player + '+' + bot + '=' + sum, win ? amount : -parseInt(document.getElementById('bet').value));
-            
-            // Обновляем баланс
-            setTimeout(requestBalance, 500);
-        }
-        
-        function addToHistory(result, change) {
-            let historyDiv = document.getElementById('history');
-            let historyItem = document.createElement('div');
-            historyItem.style.margin = '5px';
-            historyItem.style.padding = '5px';
-            historyItem.style.borderRadius = '5px';
-            historyItem.style.backgroundColor = '#1a1a2e';
-            historyItem.innerHTML = `${result} | ${change > 0 ? '+' + change : change}`;
-            historyDiv.prepend(historyItem);
-            
-            if (historyDiv.children.length > 10) {
-                historyDiv.removeChild(historyDiv.lastChild);
-            }
-        }
-        
-        // Получение данных от бота
-        window.addEventListener('message', function(event) {
-            let data = event.data;
-            if (data.type === 'balance') {
-                updateBalance(data.balance);
-            } else if (data.type === 'dice_result') {
-                showResult(data.player, data.bot, data.win, data.amount);
-            }
-        });
-        
-        // Инициализация
-        tg.ready();
-        setChoice('high');
-        requestBalance();
-    </script>
+<body>
+
+<h1>🎲 Dice</h1>
+
+Баланс: <span id="balance">0</span>
+
+<input id="bet" type="number" placeholder="Ставка">
+
+<button onclick="rollDice()">Бросить</button>
+
+<h2 id="result"></h2>
+
+<script src="app.js"></script>
+
+<script>
+
+function rollDice(){
+
+let bet = parseInt(document.getElementById("bet").value)
+
+if(!bet) return
+
+let dice = Math.floor(Math.random()*6)+1 + Math.floor(Math.random()*6)+1
+
+let win = 0
+
+if(dice >= 8){
+
+win = bet * 2
+
+}
+
+Telegram.WebApp.sendData(JSON.stringify({
+action:"dice",
+win:win,
+bet:bet
+}))
+
+
+document.getElementById("result").innerText = "Кости: " + dice
+
+}
+
+</script>
+
 </body>
 </html>
