@@ -1,23 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<title>Holy Casino</title>
+<title>Holy Crash</title>
+
 <link rel="stylesheet" href="style.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 </head>
 
 <body>
 
-<h1>🎰 Holy Casino</h1>
-
-<div class="balance">
-Баланс: <span id="balance">0</span>
+<div class="topbar">
+<div>💥 Crash</div>
+<div class="balance">🪙 <span id="balance">0</span></div>
 </div>
 
-<div class="menu">
-<a href="crash.html"><button>💥 Crash</button></a>
-<a href="dice.html"><button>🎲 Dice</button></a>
+<div class="game">
+
+<div id="graph"></div>
+
+<h2 id="multiplier">1.00x</h2>
+
+<input id="bet" placeholder="Ставка">
+
+<br>
+
+<button onclick="play()">Играть</button>
+<button onclick="cashout()">Вывод</button>
+
+<div id="msg"></div>
+
 </div>
 
 <script src="app.js"></script>
