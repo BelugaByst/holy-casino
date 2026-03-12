@@ -5,313 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            font-family: 'Montserrat', sans-serif;
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .game-container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        
-        .balance-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 15px 25px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        .balance-label {
-            font-size: 16px;
-            opacity: 0.8;
-            font-weight: 500;
-        }
-        
-        .balance-value {
-            font-size: 24px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .game-area {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 25px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .multiplier-area {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-            min-height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-        
-        .steve {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" fill="%233d5d9e"/><rect x="8" y="8" width="8" height="8" fill="%23f9c8a1"/><rect x="16" y="8" width="8" height="8" fill="%23f9c8a1"/><rect x="24" y="8" width="8" height="8" fill="%23f9c8a1"/><rect x="32" y="8" width="8" height="8" fill="%23f9c8a1"/><rect x="8" y="16" width="8" height="8" fill="%23f9c8a1"/><rect x="16" y="16" width="8" height="8" fill="%23f9c8a1"/><rect x="24" y="16" width="8" height="8" fill="%23f9c8a1"/><rect x="32" y="16" width="8" height="8" fill="%23f9c8a1"/><rect x="16" y="24" width="8" height="8" fill="%235a4a3a"/><rect x="24" y="24" width="8" height="8" fill="%235a4a3a"/><rect x="16" y="32" width="8" height="8" fill="%233d5d9e"/><rect x="24" y="32" width="8" height="8" fill="%233d5d9e"/><rect x="8" y="40" width="8" height="8" fill="%233d5d9e"/><rect x="16" y="40" width="8" height="8" fill="%233d5d9e"/><rect x="24" y="40" width="8" height="8" fill="%233d5d9e"/><rect x="32" y="40" width="8" height="8" fill="%233d5d9e"/></svg>') no-repeat center/contain;
-            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
-            animation: fly 3s linear infinite;
-            z-index: 2;
-        }
-        
-        .elytra {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="%23a5a5a5" d="M12 12 L24 4 L36 12 L36 24 L24 36 L12 24 Z"/><path fill="%237d7d7d" d="M24 4 L36 12 L36 24 L24 36 L12 24 L12 12 Z"/><path fill="%23c5c5c5" d="M18 18 L30 18 L30 30 L18 30 Z"/></svg>') no-repeat center/contain;
-            opacity: 0.8;
-            animation: flyElytra 3s linear infinite;
-            z-index: 1;
-        }
-        
-        @keyframes fly {
-            0% { transform: translateX(-100%) translateY(0) rotate(0deg); }
-            25% { transform: translateX(-50%) translateY(-20px) rotate(5deg); }
-            50% { transform: translateX(0) translateY(0) rotate(0deg); }
-            75% { transform: translateX(50%) translateY(20px) rotate(-5deg); }
-            100% { transform: translateX(100%) translateY(0) rotate(0deg); }
-        }
-        
-        @keyframes flyElytra {
-            0% { transform: translateX(-100%) translateY(10px) rotate(-10deg); }
-            50% { transform: translateX(0) translateY(-10px) rotate(0deg); }
-            100% { transform: translateX(100%) translateY(10px) rotate(10deg); }
-        }
-        
-        .multiplier {
-            font-size: 72px;
-            font-weight: 900;
-            color: #ffd700;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-            z-index: 3;
-            position: relative;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 30px;
-            border-radius: 50px;
-            backdrop-filter: blur(5px);
-        }
-        
-        .crashed {
-            font-size: 48px;
-            font-weight: 900;
-            color: #ff4444;
-            text-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
-            display: none;
-            z-index: 3;
-            position: relative;
-        }
-        
-        .bet-section {
-            margin: 20px 0;
-        }
-        
-        .bet-input {
-            width: 100%;
-            padding: 15px;
-            font-size: 20px;
-            border: none;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            text-align: center;
-            box-sizing: border-box;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 15px;
-        }
-        
-        .bet-input:focus {
-            outline: none;
-            border-color: #00ff87;
-        }
-        
-        .quick-bets {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        
-        .quick-bet {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 10px 20px;
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .quick-bet:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .play-btn, .cashout-btn {
-            flex: 1;
-            padding: 18px;
-            font-size: 20px;
-            font-weight: 900;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
-        .play-btn {
-            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-            color: #1a1a2e;
-            box-shadow: 0 0 20px rgba(0, 255, 135, 0.3);
-        }
-        
-        .play-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .cashout-btn {
-            background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
-            color: #1a1a2e;
-            display: none;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
-        
-        .cashout-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-            color: #1a1a2e;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 24px;
-            font-weight: 900;
-            box-shadow: 0 0 30px rgba(0, 255, 135, 0.5);
-            z-index: 1000;
-            transition: transform 0.3s ease;
-            text-align: center;
-            min-width: 200px;
-        }
-        
-        .notification.error {
-            background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
-        }
-        
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .history {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-        
-        .history-item {
-            padding: 5px 10px;
-            margin: 2px 0;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .history-win {
-            background: rgba(0, 255, 135, 0.1);
-            color: #00ff87;
-        }
-        
-        .history-lose {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
-        }
+        /* ... весь твой CSS ... */
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="balance-box">
             <span class="balance-label">Баланс</span>
-            <span class="balance-value" id="balance">0</span>
+            <span class="balance-value" id="balance">0₽</span>
         </div>
         
-        <div class="game-area">
-            <div class="multiplier-area">
-                <div class="steve"></div>
-                <div class="elytra"></div>
-                <div class="multiplier" id="multiplier">1.00x</div>
-                <div class="crashed" id="crashed">💥 CRASHED!</div>
-            </div>
-            
-            <div class="bet-section">
-                <input type="number" id="bet" class="bet-input" placeholder="Ставка" min="1000000" max="100000000" value="1000000">
-                
-                <div class="quick-bets">
-                    <div class="quick-bet" onclick="setBet(1000000)">1M</div>
-                    <div class="quick-bet" onclick="setBet(5000000)">5M</div>
-                    <div class="quick-bet" onclick="setBet(10000000)">10M</div>
-                    <div class="quick-bet" onclick="setBet(50000000)">50M</div>
-                    <div class="quick-bet" onclick="setBet(100000000)">100M</div>
-                </div>
-            </div>
-            
-            <div class="buttons">
-                <button class="play-btn" id="playBtn" onclick="startGame()">🎮 ИГРАТЬ</button>
-                <button class="cashout-btn" id="cashoutBtn" onclick="cashout()">💰 ЗАБРАТЬ</button>
-            </div>
-            
-            <div class="history" id="history"></div>
-        </div>
+        <!-- ... весь остальной HTML ... -->
     </div>
     
     <div class="notification" id="notification"></div>
@@ -329,28 +33,33 @@
         let currentBet = 0;
         let winChance = 1.0;
         
-        // Инициализация
+        // Инициализация - ЗАПРАШИВАЕМ БАЛАНС
         tg.ready();
-        requestBalance();
         
         // Функция запроса баланса
         function requestBalance() {
+            console.log("📱 Запрос баланса...");
             tg.sendData(JSON.stringify({
                 action: 'get_balance'
             }));
         }
         
-        // Обновление баланса
-        function updateBalance(newBalance) {
-            balance = newBalance;
-            document.getElementById('balance').innerText = newBalance.toLocaleString() + '₽';
-        }
+        // Ждем загрузку и запрашиваем баланс
+        setTimeout(requestBalance, 500);
         
-        // Получение данных от бота
-        window.addEventListener('message', function(event) {
-            let data = event.data;
-            if (data.type === 'balance') {
-                updateBalance(data.balance);
+        // Слушаем ответы от бота
+        tg.onEvent('message', function(event) {
+            console.log("📩 Получено сообщение:", event);
+            try {
+                let data = JSON.parse(event);
+                
+                if (data.type === 'balance') {
+                    balance = data.balance;
+                    document.getElementById('balance').innerText = balance.toLocaleString() + '₽';
+                    console.log("💰 Баланс обновлен:", balance);
+                }
+            } catch (e) {
+                console.log("❌ Ошибка парсинга:", e);
             }
         });
         
@@ -359,9 +68,9 @@
             document.getElementById('bet').value = amount;
         }
         
-        // Расчет шанса выигрыша на основе ставки
+        // Расчет шанса выигрыша
         function calculateWinChance(bet) {
-            const baseCrashChance = 0.0575; // 5.75%
+            const baseCrashChance = 0.0575;
             let betMultiplier = Math.min(bet / 10000000, 5);
             let adjustedCrashChance = Math.min(baseCrashChance * (1 + betMultiplier * 0.5), 0.3);
             winChance = 1 - adjustedCrashChance;
@@ -404,16 +113,14 @@
             
             currentBet = bet;
             
-            // Отправляем ставку в бот
+            console.log("🎮 Отправка ставки:", bet);
             tg.sendData(JSON.stringify({
                 action: 'start_crash',
                 bet: bet
             }));
             
-            // Рассчитываем шанс краша на 1.01x
             let crashChance = calculateWinChance(bet);
             
-            // Генерируем точку краша
             if (Math.random() < crashChance) {
                 crashPoint = 1.01;
             } else {
@@ -466,7 +173,7 @@
             
             addToHistory('lose', currentBet, 0);
             
-            setTimeout(requestBalance, 500);
+            setTimeout(requestBalance, 1000);
         }
         
         function cashout() {
@@ -477,6 +184,7 @@
             
             let win = Math.floor(currentBet * currentMultiplier);
             
+            console.log("💰 Отправка выигрыша:", win);
             tg.sendData(JSON.stringify({
                 action: 'cashout_crash',
                 win: win
@@ -490,7 +198,7 @@
             
             addToHistory('win', currentBet, win);
             
-            setTimeout(requestBalance, 500);
+            setTimeout(requestBalance, 1000);
         }
         
         function addToHistory(result, bet, win) {
