@@ -5,316 +5,68 @@
     <title>💥 Crash Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .balance-card {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .balance-amount {
-            font-size: 32px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .refresh-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .game-area {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-        }
-        .multiplier {
-            text-align: center;
-            font-size: 48px;
-            font-weight: bold;
-            color: #ffd700;
-            padding: 30px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-        .bet-input {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: none;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-        }
-        .quick-bets {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-        .quick-bet {
-            flex: 1;
-            min-width: 60px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            padding: 10px;
-            color: white;
-            cursor: pointer;
-        }
-        .play-btn, .cashout-btn {
-            width: 100%;
-            padding: 18px;
-            font-size: 20px;
-            font-weight: bold;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        .play-btn {
-            background: #22c55e;
-            color: white;
-        }
-        .cashout-btn {
-            background: #f59e0b;
-            color: white;
-            display: none;
-        }
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            transition: transform 0.3s;
-            z-index: 1000;
-        }
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        .notification.error {
-            background: #ef4444;
-        }
-        .notification.success {
-            background: #22c55e;
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="balance-card">
-            <div class="balance-amount">
-                <span>💰 <span id="balance">0</span> ₽</span>
-                <button class="refresh-btn" onclick="getBalance()">↻</button>
-            </div>
+<body style="background: #1a1a2e; color: white; padding: 20px; font-family: Arial;">
+    <h1>🔧 ТЕСТОВЫЙ РЕЖИМ</h1>
+    
+    <div style="background: #16213e; padding: 20px; border-radius: 10px;">
+        <h2>Баланс: <span id="balance">0</span> ₽</h2>
+        <button onclick="testBalance()" style="padding: 10px; background: #00ff87;">🔄 Получить баланс</button>
+        
+        <div style="margin-top: 20px;">
+            <h3>Ставка:</h3>
+            <input type="number" id="bet" value="1000000" style="padding: 10px;">
+            <button onclick="testBet()" style="padding: 10px; background: #22c55e;">🎮 Тест ставки</button>
         </div>
-
-        <div class="game-area">
-            <div class="multiplier" id="multiplier">1.00x</div>
-            
-            <input type="number" id="bet" class="bet-input" min="1000000" max="100000000" value="1000000" placeholder="Ставка">
-            
-            <div class="quick-bets">
-                <button class="quick-bet" onclick="setBet(1000000)">1M</button>
-                <button class="quick-bet" onclick="setBet(5000000)">5M</button>
-                <button class="quick-bet" onclick="setBet(10000000)">10M</button>
-                <button class="quick-bet" onclick="setBet(50000000)">50M</button>
-                <button class="quick-bet" onclick="setBet(100000000)">100M</button>
-            </div>
-            
-            <button class="play-btn" id="playBtn" onclick="startGame()">🎮 НАЧАТЬ</button>
-            <button class="cashout-btn" id="cashoutBtn" onclick="cashout()">💰 ЗАБРАТЬ</button>
-        </div>
+        
+        <div style="margin-top: 20px;" id="log"></div>
     </div>
-
-    <div class="notification" id="notification"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
 
-        let balance = 0;
-        let gameActive = false;
-        let gameInterval;
-        let currentMultiplier = 1.00;
-        let crashPoint;
-        let currentBet = 0;
+        function addLog(text) {
+            const log = document.getElementById('log');
+            log.innerHTML = '<p style="color: #00ff87">✅ ' + text + '</p>' + log.innerHTML;
+        }
 
-        // ===== ПОЛУЧЕНИЕ БАЛАНСА =====
-        function getBalance() {
-            console.log("📱 Запрос баланса...");
+        function testBalance() {
+            addLog('📤 Отправляем запрос баланса...');
             tg.sendData(JSON.stringify({
                 action: 'get_balance'
             }));
         }
 
-        // ===== ОБРАБОТКА ОТВЕТОВ ОТ БОТА =====
-        tg.onEvent('message', function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                console.log("📩 Ответ от бота:", data);
-                
-                if (data.type === 'balance') {
-                    balance = data.balance;
-                    document.getElementById('balance').innerText = balance.toLocaleString();
-                    showNotification('✅ Баланс обновлен', 'success');
-                }
-                else if (data.type === 'error') {
-                    showNotification(data.message, 'error');
-                }
-                else if (data.type === 'bet_accepted') {
-                    balance = data.balance;
-                    document.getElementById('balance').innerText = balance.toLocaleString();
-                }
-                else if (data.type === 'win') {
-                    balance = data.balance;
-                    document.getElementById('balance').innerText = balance.toLocaleString();
-                    showNotification(`🎉 Выигрыш ${data.win.toLocaleString()} ₽`, 'success');
-                }
-            } catch(e) {
-                console.log("❌ Ошибка:", e);
-            }
-        });
-
-        // ===== УВЕДОМЛЕНИЯ =====
-        function showNotification(text, type = 'info') {
-            const notification = document.getElementById('notification');
-            notification.textContent = text;
-            notification.className = 'notification show ' + type;
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 2000);
-        }
-
-        // ===== СТАВКИ =====
-        function setBet(amount) {
-            document.getElementById('bet').value = amount;
-        }
-
-        // ===== ИГРА =====
-        function startGame() {
+        function testBet() {
             const bet = parseInt(document.getElementById('bet').value);
-            
-            // Проверки
-            if (bet < 1000000) {
-                showNotification('❌ Минимум 1 000 000 ₽', 'error');
-                return;
-            }
-            if (bet > 100000000) {
-                showNotification('❌ Максимум 100 000 000 ₽', 'error');
-                return;
-            }
-            if (bet > balance) {
-                showNotification('❌ Недостаточно средств!', 'error');
-                return;
-            }
-
-            currentBet = bet;
-            
-            // Отправляем ставку в бот
+            addLog('📤 Отправляем ставку: ' + bet);
             tg.sendData(JSON.stringify({
                 action: 'start_crash',
                 bet: bet
             }));
+        }
 
-            // Генерация краша
-            if (Math.random() < 0.0785) {
-                crashPoint = 1.01;
-            } else {
-                const r = Math.random();
-                if (r < 0.3) crashPoint = 1.02 + Math.random() * 0.5;
-                else if (r < 0.6) crashPoint = 1.52 + Math.random() * 1.0;
-                else if (r < 0.8) crashPoint = 2.52 + Math.random() * 2.0;
-                else if (r < 0.95) crashPoint = 4.52 + Math.random() * 3.0;
-                else crashPoint = 7.52 + Math.random() * 2.48;
-            }
-
-            // Запуск игры
-            gameActive = true;
-            currentMultiplier = 1.00;
-            
-            document.getElementById('playBtn').style.display = 'none';
-            document.getElementById('cashoutBtn').style.display = 'block';
-            document.getElementById('multiplier').style.color = '#ffd700';
-            
-            // Локально списываем для отображения
-            balance -= bet;
-            document.getElementById('balance').innerText = balance.toLocaleString();
-
-            // Игровой цикл
-            gameInterval = setInterval(() => {
-                if (!gameActive) return;
+        // Слушаем ответы от бота
+        tg.onEvent('message', function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                addLog('📩 Получен ответ: ' + JSON.stringify(data));
                 
-                currentMultiplier += 0.01;
-                document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + 'x';
-                
-                if (currentMultiplier >= crashPoint) {
-                    gameActive = false;
-                    clearInterval(gameInterval);
-                    
-                    document.getElementById('multiplier').style.color = '#ef4444';
-                    document.getElementById('playBtn').style.display = 'block';
-                    document.getElementById('cashoutBtn').style.display = 'none';
-                    
-                    showNotification(`💥 Краш! Проигрыш ${currentBet.toLocaleString()} ₽`, 'error');
-                    
-                    // Обновляем баланс
-                    setTimeout(getBalance, 1000);
+                if (data.type === 'balance') {
+                    document.getElementById('balance').innerText = data.balance;
+                    addLog('💰 Баланс обновлен: ' + data.balance);
+                } else if (data.type === 'error') {
+                    addLog('❌ Ошибка: ' + data.message);
                 }
-            }, 100);
-        }
+            } catch(e) {
+                addLog('❌ Ошибка парсинга: ' + e);
+            }
+        });
 
-        // ===== ЗАБРАТЬ ВЫИГРЫШ =====
-        function cashout() {
-            if (!gameActive) return;
-            
-            gameActive = false;
-            clearInterval(gameInterval);
-            
-            const win = Math.floor(currentBet * currentMultiplier);
-            
-            tg.sendData(JSON.stringify({
-                action: 'cashout_crash',
-                win: win
-            }));
-            
-            document.getElementById('playBtn').style.display = 'block';
-            document.getElementById('cashoutBtn').style.display = 'none';
-            document.getElementById('multiplier').style.color = '#22c55e';
-            
-            // Локально добавляем выигрыш
-            balance += win;
-            document.getElementById('balance').innerText = balance.toLocaleString();
-        }
-
-        // ===== ЗАПРОС БАЛАНСА ПРИ ЗАГРУЗКЕ =====
-        setTimeout(getBalance, 500);
+        // Запрашиваем баланс при загрузке
+        setTimeout(testBalance, 1000);
     </script>
 </body>
 </html>
